@@ -70,7 +70,17 @@ func main() {
 	fmt.Println(vstrMap, reflect.TypeOf(vstrMap), vstrMap == nil)
 	fmt.Println(vstrMap["apple"])
 
-	//结构体
+	//结构体指针类型
 	var vPoint *people = new(people)
-	fmt.Println(vPoint, reflect.TypeOf(vPoint), vPoint == nil)
+	fmt.Println(vPoint, reflect.TypeOf(vPoint), vPoint == nil)//&{0 } *main.people false
+	vPoint.name = "xiaoming"
+	vPoint.age = 6
+	fmt.Println(vPoint, reflect.TypeOf(vPoint), vPoint == nil)//&{6 xiaoming} *main.people false
+
+	//结构体实体类型
+	var vStruct people
+	fmt.Println("------------", vStruct)//&{0 } *main.people false
+	vStruct.name = "wang"
+	vStruct.age = 8
+	fmt.Println(vStruct, reflect.TypeOf(vStruct))//{8 wang} main.people
 }
