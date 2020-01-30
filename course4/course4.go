@@ -35,6 +35,28 @@ type NewInterface interface{
 	talk()
 }
 
+type bird struct {
+	age int
+}
+
+func (b bird) talk() {
+	fmt.Println("gu gu gu", b.age)
+}
+
+func say(sb NewInterface) {
+	sb.talk()
+	switch sb.(type) {
+case people:
+	fmt.Println("他是人")
+case bird:
+	fmt.Println("它是鸟")
+case *bird:
+	fmt.Println("它是鸟*")
+default:
+	fmt.Println("Unknown", reflect.TypeOf(sb))
+}
+}
+
 func main() {
 	fmt.Println("Course 4")
 
@@ -74,4 +96,16 @@ func main() {
 	var p = new(people)
 	v_nl = p
 	fmt.Println(v_nl, reflect.TypeOf(v_nl))//&{0 } *main.people
+
+	
+	//var gezhi *bird//runtime error: invalid memory address or nil pointer dereference
+	//var gezhi = new(bird)//OK
+	var gezhi bird//OK
+	gezhi.age = 3
+	v_nl = gezhi
+	fmt.Println(v_nl, reflect.TypeOf(v_nl))//&{3} *main.bird
+	v_nl.talk()//gu gu gu 3
+
+	say(gezhi)//gu gu gu 3
+	say(xiaoli)
 }
