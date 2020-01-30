@@ -44,6 +44,20 @@ func talkWithLock(data string) {
 	lock.Unlock()
 }
 
+
+func sayWithSelect(channel chan string) {
+	fmt.Println("sayWithSelect() enter.")
+	for {
+		select {
+		case a := <-channel:
+			fmt.Println("sayWithSelect() - ", a)
+		default:
+			fmt.Println("sayWithSelect() - No Data.")
+			time.Sleep(5e8)
+		}
+	}
+}
+
 func main() {
 	fmt.Println("Course 5.")
 	go say("1 Ni hao")
@@ -66,6 +80,11 @@ func main() {
 	name = "bbb"
 	lock.Unlock()
 	go talkWithLock(name)
+
+	var selectChannel = make(chan string, 0)
+	go sayWithSelect(selectChannel)
+	time.Sleep(5e8)
+	selectChannel <- "XXX"
 
 	time.Sleep(2e9)
 	fmt.Println("exit.")
