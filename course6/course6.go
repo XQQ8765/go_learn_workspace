@@ -12,7 +12,20 @@ import (
 	//"math"
 	//"net"
 	"net/http"
+	//"getstrtest"//We need to put the package "getstrtest" into folder "D:\GoPath\src"
+	//. "getstrtest"//Use . can ignore the package name in the below code
+	_ "getstrtest"//Only load the init() method of the package, without do any otherthings
 )
+
+//Package init method, run before main() method.
+func init() {
+	fmt.Println("Course 6 - init().")
+}
+
+//Can define multiple init() methods.
+func init() {
+	fmt.Println("Course 6 - init() -2.")
+}
 
 //Course 6:常见包
 func main() {
@@ -41,9 +54,15 @@ func main() {
 	fmt.Println(os.Args)
 	//os.Exit(2)
 
-	var handler MyHttpHandler
-	http.Handle("/", handler)
-	http.ListenAndServe(":80", nil)
+	//var handler MyHttpHandler
+	//http.Handle("/", handler)
+	//http.ListenAndServe(":80", nil)
+
+	//fmt.Println(getstring())
+	//fmt.Println(getstrtest.getstring())//undefined: getstrtest.getstring, because the func is private
+	//fmt.Println(getstrtest.Getstring())
+	//fmt.Println(Getstring())//package is deifined in ".", no need to add package name here
+	//fmt.Println(getstrtest.Getstring())
 }
 
 type MyHttpHandler struct {
