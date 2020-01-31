@@ -32,10 +32,20 @@ func main() {
 			fmt.Println(err)
 			return
 		}
+		addConn(conn)
 		go Read(conn)
 	}
 }
 
+var conns = make(map[int]net.Conn)
+var count = 0
+//增加连接
+func addConn(conn net.Conn) {
+	conns[count] = conn
+	count++
+}
+
+//读取数据
 func Read(conn net.Conn) {
 	for {
 		var bytes = make([]byte, 1024)
@@ -47,19 +57,17 @@ func Read(conn net.Conn) {
 		}
 		//log.Println(string(bytes[:n]))
 		fmt.Println("Recevied msg:", string(bytes[:n]))
-		var writeerr = Write(conn, bytes[:n])
-		if (writeerr != nil) {
-			return
-		}
+		Write(bytes[:n])
 	}
 }
 
-func Write(conn net.Conn, bytes []byte) error {
-	_, err := conn.Write(bytes)
-	if (err != nil) {
-		fmt.Println("Error in Write:", err)
-		conn.Close()
-		return err
+//写回数据
+func Write(bytes []byte) {
+	for _, conn := range conns {
+		_, err := conn.Write(bytes)
+		if (err != nil) {
+			conn.Close()
+			continue
+		}
 	}
-	return nil
 }
