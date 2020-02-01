@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"net"
-	"time"
-	"strconv"
-	//"log"
+	//"time"
+	//"strconv"
+	"os"
+	"bufio"
+	"log"
 )
 
 func main() {
@@ -21,12 +23,7 @@ func main() {
 	}
 
 	for {
-		_, err = conn.Write(readIO())
-		if (err != nil) {
-			fmt.Println("Write Error", err)
-			conn.Close()
-			return
-		}
+		go write(conn)
 
 		var b = make([]byte, 1024)
 		n, err := conn.Read(b)
@@ -35,13 +32,19 @@ func main() {
 			conn.Close()
 			return
 		}
-		fmt.Println("Received:", string(b[0:n]))
-		time.Sleep(1e9)
+		log.Println("Received:", string(b[0:n]))
 	}
 }
 
-var count = 0
-func readIO() []byte {
-	count++
-	return []byte("说话," + strconv.Itoa(count)) 
+func write(conn net.Conn) {
+	var reader = bufio.NewReader(os.Stdin)
+	for {
+		bytes, _, _ := reader.ReadLine()
+		_, err := conn.Write(bytes)
+		if (err != nil) {
+			fmt.Println("Write Error", err)
+			conn.Close()
+			return
+		}
+	}
 }

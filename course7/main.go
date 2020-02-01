@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"sync"
 	//"log"
 )
 
@@ -39,10 +40,21 @@ func main() {
 
 var conns = make(map[int]net.Conn)
 var count = 0
+var Lock = new(sync.RWMutex)//读写锁
+
 //增加连接
 func addConn(conn net.Conn) {
+	Lock.Lock()
 	conns[count] = conn
 	count++
+	Lock.Unlock()
+}
+
+//删除连接
+func delConn(n int) {
+	Lock.Lock()
+	delete(conns, n)
+	Lock.Unlock()
 }
 
 //读取数据
@@ -63,11 +75,16 @@ func Read(conn net.Conn) {
 
 //写回数据
 func Write(bytes []byte) {
-	for _, conn := range conns {
+	Lock.RLock()
+	for k, conn := range conns {
 		_, err := conn.Write(bytes)
 		if (err != nil) {
+			Lock.RUnlock()
+			delConn(k)
+			Lock.RLock()
 			conn.Close()
 			continue
 		}
 	}
+	Lock.RUnlock()
 }
