@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"strconv"
 	//"log"
 )
 
@@ -38,23 +39,40 @@ func main() {
 	}
 }
 
-var conns = make(map[int]net.Conn)
-var count = 0
-var Lock = new(sync.RWMutex)//读写锁
+var AL = new(allconns)
+type allconns struct {
+	conns map[int]*conndata
+	Count int
+	Lock *sync.RWMutex
+}
+type conndata struct {
+	conn net.Conn
+	id int
+	name string
+}
+
+func init() {
+	AL.conns = make(map[int]*conndata)
+	AL.Lock = new(sync.RWMutex)
+}
 
 //增加连接
 func addConn(conn net.Conn) {
-	Lock.Lock()
-	conns[count] = conn
-	count++
-	Lock.Unlock()
+	AL.Lock.Lock()
+	var conndata = new(conndata)
+	conndata.conn = conn
+	conndata.id = AL.Count
+	conndata.name = "Conn-" + strconv.Itoa(conndata.id)
+	AL.conns[AL.Count] = conndata
+	AL.Count++
+	AL.Lock.Unlock()
 }
 
 //删除连接
 func delConn(n int) {
-	Lock.Lock()
-	delete(conns, n)
-	Lock.Unlock()
+	AL.Lock.Lock()
+	delete(AL.conns, n)
+	AL.Lock.Unlock()
 }
 
 //读取数据
@@ -75,16 +93,17 @@ func Read(conn net.Conn) {
 
 //写回数据
 func Write(bytes []byte) {
-	Lock.RLock()
-	for k, conn := range conns {
+	AL.Lock.RLock()
+	for k, conndata := range AL.conns {
+		var conn = conndata.conn
 		_, err := conn.Write(bytes)
 		if (err != nil) {
-			Lock.RUnlock()
+			AL.Lock.RUnlock()
 			delConn(k)
-			Lock.RLock()
+			AL.Lock.RLock()
 			conn.Close()
 			continue
 		}
 	}
-	Lock.RUnlock()
+	AL.Lock.RUnlock()
 }
